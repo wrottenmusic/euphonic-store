@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Euphonic Sounds | Official Store</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root { --blue: #0056ff; --dark: #050505; --gold: #ffcc00; --text: #ffffff; --wa-green: #25D366; }
+        * { box-sizing: border-box; }
+        body { background: var(--dark); color: var(--text); font-family: 'Montserrat', sans-serif; margin: 0; padding-bottom: 120px; overflow-x: hidden; }
+
+        /* Navigation & Header */
+        .header { padding: 20px; border-bottom: 1px solid #222; position: sticky; top: 0; background: rgba(5,5,5,0.95); backdrop-filter: blur(15px); z-index: 100; }
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .logo-area { display: flex; align-items: center; gap: 10px; }
+        .logo-img { height: 35px; border-radius: 4px; }
+        
+        .folder-nav { display: flex; gap: 8px; max-width: 1200px; margin: 10px auto; }
+        .folder { flex: 1; background: #111; padding: 12px; border-radius: 10px; text-align: center; cursor: pointer; border: 1px solid #222; font-weight: 700; font-size: 11px; transition: 0.3s; color: #888; }
+        .folder.active { background: var(--blue); border-color: var(--blue); color: white; }
+
+        /* Search Bar */
+        .search-container { padding: 10px 20px; max-width: 1200px; margin: 0 auto; }
+        #search-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #222; background: #111; color: white; outline: none; font-family: inherit; }
+
+        /* BeatStars Styled Grid */
+        #beat-container { padding: 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; max-width: 1200px; margin: 0 auto; min-height: 400px; }
+        .beat-card { background: #121212; border-radius: 12px; overflow: hidden; border: 1px solid #222; transition: transform 0.2s; }
+        .beat-card:active { transform: scale(0.97); }
+        .art-wrap { position: relative; width: 100%; aspect-ratio: 1/1; }
+        .art-img { width: 100%; height: 100%; object-fit: cover; }
+        .play-btn { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.2); border: none; color: white; font-size: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+        /* Modals & Overlays */
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.96); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .modal { background: #0a0a0a; padding: 30px; border-radius: 20px; border: 1px solid #333; width: 100%; max-width: 400px; text-align: center; }
+        .btn { width: 100%; padding: 15px; margin: 8px 0; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; text-decoration: none; display: block; font-size: 14px; }
+
+        /* Global Audio Player */
+        #player { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(8,8,8,0.98); border-top: 2px solid var(--blue); padding: 15px; display: none; align-items: center; justify-content: space-between; z-index: 4000; backdrop-filter: blur(10px); }
+
+        /* Footer */
+        .footer { padding: 60px 20px 140px; text-align: center; background: #050505; border-top: 1px solid #111; color: #555; font-size: 12px; }
+        .footer b { color: #888; font-size: 14px; }
+
+        @media (max-width: 768px) { #beat-container { grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 10px; } }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="header-top">
+            <div class="logo-area">
+                <img src="euphoniclg.png" class="logo-img" onerror="this.style.display='none'">
+                <span style="font-weight:900; color:var(--blue); letter-spacing:-1px;">EUPHONIC SOUNDS</span>
+            </div>
+            <div onclick="toggleCart()" style="cursor:pointer; background:#222; padding:10px 18px; border-radius:30px; font-weight:900; border:1px solid #333;">🛒 <span id="cart-count">0</span></div>
+        </div>
+        <div class="folder-nav">
+            <div class="folder active" id="btn-beat" onclick="filterFolder('beat')">BEATS</div>
+            <div class="folder" id="btn-pack" onclick="filterFolder('pack')">SAMPLES</div>
+            <div class="folder" id="btn-exclusive" onclick="filterFolder('exclusive')">PREMIUM</div>
+        </div>
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="search-input" onkeyup="searchBeats()" placeholder="Search title, genre, or BPM...">
+    </div>
+
+    <div id="beat-container"></div>
+
+<footer class="footer" style="padding: 60px 20px 140px; text-align: center; border-top: 1px solid #222; background: #050505;">
+    
+    <div style="display: flex; justify-content: center; gap: 30px; margin-bottom: 25px;">
+        <a href="https://facebook.com/wrottmusic" target="_blank" style="color: #1877F2; font-size: 24px; text-decoration: none;">
+            <i class="fa-brands fa-facebook"></i>
+        </a>
+        
+        <a href="https://instagram.com/victorwrott" target="_blank" style="font-size: 24px; text-decoration: none; background: -webkit-linear-gradient(#405de6, #5851db, #833ab4, #c13584, #e1306c, #fd1d1d); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            <i class="fa-brands fa-instagram"></i>
+        </a>
+        
+        <a href="https://youtube.com/@victorwrott" target="_blank" style="color: #FF0000; font-size: 24px; text-decoration: none;">
+            <i class="fa-brands fa-youtube"></i>
+        </a>
+    </div>
+
+    <div style="display: flex; justify-content: center; align-items: center; gap: 6px; color: #7d8590; font-size: 13px;">
+        <span>&copy; 2026 <b>Euphonic Sounds</b></span>
+    </div>
+    
+    <div style="color: #484f58; font-size: 11px; margin-top: 10px;">
+        a <span style="font-weight: bold; font-style: italic;">Wrotten Music</span> studio.
+    </div>
+</footer>
+
+    <div id="social-modal" class="overlay">
+        <div class="modal">
+            <h2 style="margin-top:0;">Unlock Download</h2>
+            <p style="font-size:12px; color:#888; margin-bottom:20px;">Support the studio to get the demo track!</p>
+            <a href="https://youtube.com/@victorwrott" target="_blank" onclick="unlock()" class="btn" style="background:#ff0000; color:white;">SUBSCRIBE ON YOUTUBE</a>
+            <a href="https://instagram.com/victorwrott" target="_blank" onclick="unlock()" class="btn" style="background:#E1306C; color:white;">FOLLOW ON INSTAGRAM</a>
+            <hr style="border:0; border-top:1px solid #222; margin:15px 0;">
+            <a id="final-dl-btn" href="#" download class="btn" style="background:#222; color:#444; pointer-events:none;">LOCKED</a>
+            <button onclick="closeModals()" style="background:none; color:#666; border:none; margin-top:10px; cursor:pointer;">Maybe later</button>
+        </div>
+    </div>
+
+    <div id="check-modal" class="overlay">
+        <div class="modal">
+            <h2>Checkout</h2>
+            <p style="color:var(--gold); font-weight:900; font-size:20px;">Total: K<span id="m-total">0</span></p>
+            <button class="btn" style="background:#ffcc00; color:#000;" onclick="showPay('MTN')">MTN MOMO</button>
+            <button class="btn" style="background:#ff0000; color:white;" onclick="showPay('Airtel')">AIRTEL MONEY</button>
+            <button onclick="closeModals()" style="background:none; color:#666; border:none; margin-top:10px; cursor:pointer;">Back to Shop</button>
+        </div>
+    </div>
+
+    <div id="pay-modal" class="overlay">
+        <div class="modal">
+            <h3 id="net-title">Payment</h3>
+            <p>Send <b>K<span class="final-amt">0</span></b> to:</p>
+            <div id="pay-num" style="background:#000; padding:15px; color:var(--gold); font-family:monospace; margin:15px 0; border:1px dashed #444; font-size:18px;"></div>
+            <button class="btn" style="background:var(--wa-green); color:white;" onclick="finish()">I HAVE PAID (WHATSAPP)</button>
+        </div>
+    </div>
+
+    <div id="player">
+        <div style="display:flex; align-items:center; gap:10px; width:40%;">
+            <img id="p-art" src="" style="width:45px; height:45px; border-radius:6px; object-fit:cover;">
+            <div style="overflow:hidden;"><div id="p-title" style="font-size:12px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div></div>
+        </div>
+        <audio id="audio" controls style="width:30%; height:30px; filter:invert(1)"></audio>
+        <div style="width:30%; display:flex; justify-content:flex-end; gap:10px;">
+            <button onclick="document.getElementById('social-modal').style.display='flex'" style="background:#222; color:white; font-size:10px; padding:8px 12px; border-radius:6px; border:1px solid #444; font-weight:900; cursor:pointer;">⬇ DEMO</button>
+            <button onclick="document.getElementById('player').style.display='none'; document.getElementById('audio').pause();" style="background:none; color:#666; border:none; cursor:pointer; font-size:18px;">✕</button>
+        </div>
+    </div>
+
+    <script>
+        let allBeats = [], cart = [], activeDL = {url:"", title:""};
+        const S_ID = "1Pc6RKslpWJjPp4WMUweKCGqATBGnSmW9NUMQzSmJrOk";
+        const URL = `https://docs.google.com/spreadsheets/d/${S_ID}/gviz/tq?tqx=out:json`;
+
+        document.getElementById('year').innerText = new Date().getFullYear();
+
+        async function load() {
+            const r = await fetch(URL);
+            const t = await r.text();
+            const j = JSON.parse(t.substring(47).slice(0, -2));
+            allBeats = j.table.rows.map((row, i) => ({
+                id: i, title: row.c[1]?.v || "Beat", bpm: row.c[2]?.v || "N/A",
+                genre: (row.c[3]?.v || "").toLowerCase(), demo: row.c[4]?.v || "",
+                img: "cover.jpg", price: row.c[6]?.v || 50
+            }));
+            if(allBeats[0].title.toLowerCase().includes("title")) allBeats.shift();
+            filterFolder('beat');
+        }
+
+        function filterFolder(type) {
+            document.querySelectorAll('.folder').forEach(el => el.classList.remove('active'));
+            document.getElementById('btn-' + type).classList.add('active');
+            let filtered = allBeats.filter(b => type === 'pack' ? b.genre.includes('pack') : type === 'exclusive' ? b.genre.includes('exclusive') : !b.genre.includes('pack') && !b.genre.includes('exclusive'));
+            draw(filtered);
+        }
+
+        function searchBeats() {
+            const q = document.getElementById('search-input').value.toLowerCase();
+            draw(allBeats.filter(b => b.title.toLowerCase().includes(q) || b.genre.includes(q)));
+        }
+
+        function draw(data) {
+            document.getElementById('beat-container').innerHTML = data.map(b => `
+                <div class="beat-card">
+                    <div class="art-wrap"><img src="${b.img}" class="art-img"><button class="play-btn" onclick="play(${b.id})">▶</button></div>
+                    <div style="padding:15px">
+                        <div style="font-size:13px; font-weight:900;">${b.title}</div>
+                        <div style="font-size:10px; color:#666; margin-top:4px;">${b.genre.toUpperCase()} • ${b.bpm} BPM</div>
+                        <div style="color:var(--gold); font-weight:900; margin:10px 0;">K${b.price}</div>
+                        <button onclick="buy(event, '${b.title}', ${b.price})" style="width:100%; padding:10px; border-radius:8px; border:none; background:var(--blue); color:white; font-weight:700; cursor:pointer; font-size:11px;">ADD TO CART</button>
+                    </div>
+                </div>`).join('');
+        }
+
+        function play(id) {
+            const b = allBeats.find(x => x.id === id);
+            const a = document.getElementById('audio');
+            
+            // DROPBOX FIX
+            let streamUrl = b.demo.replace('www.dropbox.com', 'dl.dropboxusercontent.com').replace('dl=0', 'dl=1');
+            
+            document.getElementById('p-title').innerText = b.title;
+            document.getElementById('p-art').src = b.img;
+            activeDL = {url: streamUrl, title: b.title + "_Demo.mp3"};
+            
+            a.src = streamUrl;
+            a.load();
+            document.getElementById('player').style.display = 'flex';
+            
+            // Reset Lock
+            const btn = document.getElementById('final-dl-btn');
+            btn.style.pointerEvents = "none"; btn.style.background = "#222"; btn.innerText = "LOCKED";
+            
+            a.play();
+        }
+
+        function unlock() {
+            setTimeout(() => {
+                const btn = document.getElementById('final-dl-btn');
+                btn.href = activeDL.url;
+                btn.setAttribute('download', activeDL.title);
+                btn.style.pointerEvents = "auto";
+                btn.style.background = "var(--blue)";
+                btn.style.color = "white";
+                btn.innerText = "DOWNLOAD NOW";
+            }, 3000);
+        }
+
+        function buy(e, t, p) { 
+            cart.push({t, p}); 
+            document.getElementById('cart-count').innerText = cart.length;
+            const btn = e.target;
+            btn.innerText = "✓ ADDED"; btn.style.background = "#25D366";
+            setTimeout(() => { btn.innerText = "ADD TO CART"; btn.style.background = "var(--blue)"; }, 2000);
+        }
+
+        function toggleCart() {
+            if(cart.length === 0) return alert("Cart is empty");
+            document.getElementById('m-total').innerText = cart.reduce((a,b)=>a+b.p, 0);
+            document.getElementById('check-modal').style.display = 'flex';
+        }
+
+        function showPay(n) {
+            document.getElementById('check-modal').style.display = 'none';
+            document.getElementById('pay-num').innerText = n === "MTN" ? "0968224418" : "0979693555";
+            document.querySelectorAll('.final-amt').forEach(e => e.innerText = document.getElementById('m-total').innerText);
+            document.getElementById('pay-modal').style.display = 'flex';
+        }
+
+        function closeModals() { document.querySelectorAll('.overlay').forEach(e => e.style.display = 'none'); }
+
+        function finish() {
+            const total = document.getElementById('m-total').innerText;
+            const items = cart.map(c => "- " + c.t).join('%0A');
+            const msg = `NEW ORDER%0A-----------%0A${items}%0A%0ATotal: K${total}%0A%0AI have paid via MoMo.`;
+            window.open(`https://wa.me/260979693555?text=${msg}`);
+            closeModals(); cart = []; document.getElementById('cart-count').innerText = "0";
+        }
+
+        load();
+    </script>
+</body>
+</html>
