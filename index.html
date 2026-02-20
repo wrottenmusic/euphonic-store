@@ -178,10 +178,22 @@
             draw(allBeats.filter(b => b.title.toLowerCase().includes(q) || b.genre.includes(q)));
         }
 
-   function draw(data) {
+function draw(data) {
     document.getElementById('beat-container').innerHTML = data.map(b => {
-        // This removes "exclusive" and "pack" from the display text only
+        const isPack = b.genre.includes('pack');
+        const isPremium = b.genre.includes('exclusive');
+        
+        // 1. Clean up the genre text (hide keywords)
         const cleanGenre = b.genre.replace('exclusive', '').replace('pack', '').trim();
+
+        // 2. Logic for BPM/Genre line (Hide if it's a pack)
+        const infoLine = isPack 
+            ? `<div style="font-size:10px; color:#666; margin-top:4px;">${cleanGenre.toUpperCase()}</div>`
+            : `<div style="font-size:10px; color:#666; margin-top:4px;">${cleanGenre.toUpperCase()} • ${b.bpm} BPM</div>`;
+
+        // 3. Logic for Premium Gold Button vs Blue Button
+        const btnStyle = isPremium ? 'background:var(--gold); color:#000;' : 'background:var(--blue); color:white;';
+        const btnText = isPremium ? 'BUY EXCLUSIVE' : 'ADD TO CART';
 
         return `
             <div class="beat-card">
@@ -191,38 +203,43 @@
                 </div>
                 <div style="padding:15px">
                     <div style="font-size:13px; font-weight:900;">${b.title}</div>
-                    <div style="font-size:10px; color:#666; margin-top:4px;">
-                        ${cleanGenre.toUpperCase()} • ${b.bpm} BPM
-                    </div>
+                    ${infoLine}
                     <div style="color:var(--gold); font-weight:900; margin:10px 0;">K${b.price}</div>
-                    <button onclick="buy(event, '${b.title}', ${b.price})" style="width:100%; padding:10px; border-radius:8px; border:none; background:var(--blue); color:white; font-weight:700; cursor:pointer; font-size:11px;">ADD TO CART</button>
+                    <button onclick="buy(event, '${b.title}', ${b.price})" 
+                            style="width:100%; padding:10px; border-radius:8px; border:none; ${btnStyle} font-weight:700; cursor:pointer; font-size:11px;">
+                        ${btnText}
+                    </button>
                 </div>
             </div>`;
     }).join('');
 }
-        function play(id) {
-            const b = allBeats.find(x => x.id === id);
-            const a = document.getElementById('audio');
-            let streamUrl = b.demo.replace('www.dropbox.com', 'dl.dropboxusercontent.com').replace('dl=0', 'dl=1');
-            document.getElementById('p-title').innerText = b.title;
-            document.getElementById('p-art').src = b.img;
-            activeDL = {url: streamUrl, title: b.title + "_Demo.mp3"};
-            a.src = streamUrl;
-            a.load();
-            document.getElementById('player').style.display = 'flex';
-            const btn = document.getElementById('final-dl-btn');
-            btn.style.pointerEvents = "none"; btn.style.background = "#222"; btn.innerText = "LOCKED";
-            a.play();
-        }
+     function play(id) {
+    const b = allBeats.find(x => x.id === id);
+    const a = document.getElementById('audio');
+    const dlBtn = document.querySelector("button[onclick*='social-modal']");
+    const pBadge = document.getElementById('p-badge'); // Select the new badge
+    
+    let streamUrl = b.demo.replace('www.dropbox.com', 'dl.dropboxusercontent.com').replace('dl=0', 'dl=1');
+    
+    document.getElementById('p-title').innerText = b.title;
+    document.getElementById('p-art').src = b.img;
+    activeDL = {url: streamUrl, title: b.title + "_Demo.mp3"};
+    
+    a.src = streamUrl;
+    a.load();
+    document.getElementById('player').style.display = 'flex';
 
-        function unlock() {
-            setTimeout(() => {
-                const btn = document.getElementById('final-dl-btn');
-                btn.href = activeDL.url;
-                btn.style.pointerEvents = "auto"; btn.style.background = "var(--blue)"; btn.style.color = "white"; btn.innerText = "DOWNLOAD NOW";
-            }, 3000);
-        }
-
+    // Toggle Demo Button and Premium Badge
+    if (b.genre.includes('exclusive')) {
+        dlBtn.style.display = 'none';
+        pBadge.style.display = 'block'; // Show "PREMIUM" text
+    } else {
+        dlBtn.style.display = 'block';
+        pBadge.style.display = 'none'; // Hide "PREMIUM" text
+    }
+    
+    a.play();
+}
         function buy(e, t, p) { 
             cart.push({t, p}); 
             document.getElementById('cart-count').innerText = cart.length;
