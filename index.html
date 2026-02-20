@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Euphonic Sounds | Official Store</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
-   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root { --blue: #0056ff; --dark: #050505; --gold: #ffcc00; --text: #ffffff; --wa-green: #25D366; }
         * { box-sizing: border-box; }
@@ -25,13 +25,18 @@
         .search-container { padding: 10px 20px; max-width: 1200px; margin: 0 auto; }
         #search-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #222; background: #111; color: white; outline: none; font-family: inherit; }
 
-        /* BeatStars Styled Grid */
+        /* Beat Grid */
         #beat-container { padding: 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; max-width: 1200px; margin: 0 auto; min-height: 400px; }
         .beat-card { background: #121212; border-radius: 12px; overflow: hidden; border: 1px solid #222; transition: transform 0.2s; }
-        .beat-card:active { transform: scale(0.97); }
-        .art-wrap { position: relative; width: 100%; aspect-ratio: 1/1; }
-        .art-img { width: 100%; height: 100%; object-fit: cover; }
-        .play-btn { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.2); border: none; color: white; font-size: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .beat-card:hover { transform: translateY(-5px); border-color: #444; }
+        
+        .art-wrap { position: relative; width: 100%; aspect-ratio: 1/1; overflow: hidden; }
+        .art-wrap::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.8) 100%); pointer-events: none; }
+        .art-img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.8); transition: 0.4s ease; }
+        .beat-card:hover .art-img { filter: brightness(1); transform: scale(1.05); }
+
+        .play-btn { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.1); border: none; color: white; font-size: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 2; opacity: 0.8; }
+        .play-btn:hover { opacity: 1; font-size: 45px; }
 
         /* Modals & Overlays */
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.96); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px; }
@@ -41,32 +46,8 @@
         /* Global Audio Player */
         #player { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(8,8,8,0.98); border-top: 2px solid var(--blue); padding: 15px; display: none; align-items: center; justify-content: space-between; z-index: 4000; backdrop-filter: blur(10px); }
 
-        /* Professional Cover Art Overlay */
-.art-wrap::after {
-    content: '';
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.8) 100%);
-    pointer-events: none; /* Allows the play button to still be clicked */
-}
-
-.art-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    filter: brightness(0.8); /* Slightly dims the image */
-    transition: 0.3s ease;
-}
-
-.beat-card:hover .art-img {
-    filter: brightness(1); /* Brightens when user hovers */
-    transform: scale(1.05); /* Slight zoom effect */
-}
-
         /* Footer */
-        .footer { padding: 60px 20px 140px; text-align: center; background: #050505; border-top: 1px solid #111; color: #555; font-size: 12px; }
-        .footer b { color: #888; font-size: 14px; }
+        .footer { padding: 60px 20px 140px; text-align: center; border-top: 1px solid #222; background: #050505; }
 
         @media (max-width: 768px) { #beat-container { grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 10px; } }
     </style>
@@ -82,9 +63,9 @@
             <div onclick="toggleCart()" style="cursor:pointer; background:#222; padding:10px 18px; border-radius:30px; font-weight:900; border:1px solid #333;">🛒 <span id="cart-count">0</span></div>
         </div>
         <div class="folder-nav">
-            <div class="folder active" id="btn-beat" onclick="filterFolder('beat')">BEATS</div>
+            <div class="folder active" id="btn-all" onclick="filterFolder('all')">ALL</div>
+            <div class="folder" id="btn-beat" onclick="filterFolder('beat')">BEATS</div>
             <div class="folder" id="btn-pack" onclick="filterFolder('pack')">SAMPLES</div>
-            <div class="folder" id="btn-exclusive" onclick="filterFolder('exclusive')">PREMIUM</div>
         </div>
     </div>
 
@@ -94,61 +75,40 @@
 
     <div id="beat-container"></div>
 
-<footer class="footer" style="padding: 60px 20px 140px; text-align: center; border-top: 1px solid #222; background: #050505;">
-    
-    <div style="display: flex; justify-content: center; gap: 30px; margin-bottom: 25px;">
-        <a href="https://facebook.com/wrottmusic" target="_blank" style="color: #1877F2; font-size: 24px; text-decoration: none;">
-            <i class="fa-brands fa-facebook"></i>
-        </a>
-        
-        <a href="https://instagram.com/victorwrott" target="_blank" style="font-size: 24px; text-decoration: none; background: -webkit-linear-gradient(#405de6, #5851db, #833ab4, #c13584, #e1306c, #fd1d1d); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-            <i class="fa-brands fa-instagram"></i>
-        </a>
-        
-        <a href="https://youtube.com/@victorwrott" target="_blank" style="color: #FF0000; font-size: 24px; text-decoration: none;">
-            <i class="fa-brands fa-youtube"></i>
-        </a>
-    </div>
-
-    <div style="display: flex; justify-content: center; align-items: center; gap: 6px; color: #7d8590; font-size: 13px;">
-        <span>&copy; 2026 <b>Euphonic Sounds</b></span>
-    </div>
-    
-    <div style="color: #484f58; font-size: 11px; margin-top: 10px;">
-        a <span style="font-weight: bold; font-style: italic;">Wrotten Music</span> studio.
-    </div>
-</footer>
-
-    <div id="social-modal" class="overlay">
-        <div class="modal">
-            <h2 style="margin-top:0;">Unlock Download</h2>
-            <p style="font-size:12px; color:#888; margin-bottom:20px;">Support the studio to get the demo track!</p>
-            <a href="https://youtube.com/@victorwrott" target="_blank" onclick="unlock()" class="btn" style="background:#ff0000; color:white;">SUBSCRIBE ON YOUTUBE</a>
-            <a href="https://instagram.com/victorwrott" target="_blank" onclick="unlock()" class="btn" style="background:#E1306C; color:white;">FOLLOW ON INSTAGRAM</a>
-            <hr style="border:0; border-top:1px solid #222; margin:15px 0;">
-            <a id="final-dl-btn" href="#" download class="btn" style="background:#222; color:#444; pointer-events:none;">LOCKED</a>
-            <button onclick="closeModals()" style="background:none; color:#666; border:none; margin-top:10px; cursor:pointer;">Maybe later</button>
+    <footer class="footer">
+        <div style="display: flex; justify-content: center; gap: 30px; margin-bottom: 25px;">
+            <a href="https://facebook.com/wrottmusic" target="_blank" style="color: #1877F2; font-size: 24px;"><i class="fa-brands fa-facebook"></i></a>
+            <a href="https://instagram.com/victorwrott" target="_blank" style="font-size: 24px; background: -webkit-linear-gradient(#405de6, #5851db, #833ab4, #c13584, #e1306c, #fd1d1d); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"><i class="fa-brands fa-instagram"></i></a>
+            <a href="https://youtube.com/@victorwrott" target="_blank" style="color: #FF0000; font-size: 24px;"><i class="fa-brands fa-youtube"></i></a>
         </div>
-    </div>
+        <div style="color: #7d8590; font-size: 13px;">&copy; 2026 <b>Euphonic Sounds</b></div>
+        <div style="color: #484f58; font-size: 11px; margin-top: 10px;">a <span style="font-weight: bold; font-style: italic;">Wrotten Music</span> studio.</div>
+    </footer>
 
-    <div id="check-modal" class="overlay">
-        <div class="modal">
-            <h2>Checkout</h2>
-            <p style="color:var(--gold); font-weight:900; font-size:20px;">Total: K<span id="m-total">0</span></p>
-            <button class="btn" style="background:#ffcc00; color:#000;" onclick="showPay('MTN')">MTN MOMO</button>
-            <button class="btn" style="background:#ff0000; color:white;" onclick="showPay('Airtel')">AIRTEL MONEY</button>
-            <button onclick="closeModals()" style="background:none; color:#666; border:none; margin-top:10px; cursor:pointer;">Back to Shop</button>
-        </div>
-    </div>
+    <div id="social-modal" class="overlay"><div class="modal">
+        <h2 style="margin-top:0;">Unlock Download</h2>
+        <p style="font-size:12px; color:#888; margin-bottom:20px;">Support the studio to get the demo track!</p>
+        <a href="https://youtube.com/@victorwrott" target="_blank" onclick="unlock()" class="btn" style="background:#ff0000; color:white;">SUBSCRIBE ON YOUTUBE</a>
+        <a href="https://instagram.com/victorwrott" target="_blank" onclick="unlock()" class="btn" style="background:#E1306C; color:white;">FOLLOW ON INSTAGRAM</a>
+        <hr style="border:0; border-top:1px solid #222; margin:15px 0;">
+        <a id="final-dl-btn" href="#" download class="btn" style="background:#222; color:#444; pointer-events:none;">LOCKED</a>
+        <button onclick="closeModals()" style="background:none; color:#666; border:none; margin-top:10px; cursor:pointer;">Maybe later</button>
+    </div></div>
 
-    <div id="pay-modal" class="overlay">
-        <div class="modal">
-            <h3 id="net-title">Payment</h3>
-            <p>Send <b>K<span class="final-amt">0</span></b> to:</p>
-            <div id="pay-num" style="background:#000; padding:15px; color:var(--gold); font-family:monospace; margin:15px 0; border:1px dashed #444; font-size:18px;"></div>
-            <button class="btn" style="background:var(--wa-green); color:white;" onclick="finish()">I HAVE PAID (WHATSAPP)</button>
-        </div>
-    </div>
+    <div id="check-modal" class="overlay"><div class="modal">
+        <h2>Checkout</h2>
+        <p style="color:var(--gold); font-weight:900; font-size:20px;">Total: K<span id="m-total">0</span></p>
+        <button class="btn" style="background:#ffcc00; color:#000;" onclick="showPay('MTN')">MTN MOMO</button>
+        <button class="btn" style="background:#ff0000; color:white;" onclick="showPay('Airtel')">AIRTEL MONEY</button>
+        <button onclick="closeModals()" style="background:none; color:#666; border:none; margin-top:10px; cursor:pointer;">Back to Shop</button>
+    </div></div>
+
+    <div id="pay-modal" class="overlay"><div class="modal">
+        <h3 id="net-title">Payment</h3>
+        <p>Send <b>K<span class="final-amt">0</span></b> to:</p>
+        <div id="pay-num" style="background:#000; padding:15px; color:var(--gold); font-family:monospace; margin:15px 0; border:1px dashed #444; font-size:18px;"></div>
+        <button class="btn" style="background:var(--wa-green); color:white;" onclick="finish()">I HAVE PAID (WHATSAPP)</button>
+    </div></div>
 
     <div id="player">
         <div style="display:flex; align-items:center; gap:10px; width:40%;">
@@ -167,33 +127,37 @@
         const S_ID = "1Pc6RKslpWJjPp4WMUweKCGqATBGnSmW9NUMQzSmJrOk";
         const URL = `https://docs.google.com/spreadsheets/d/${S_ID}/gviz/tq?tqx=out:json`;
 
-        document.getElementById('year').innerText = new Date().getFullYear();
-
         async function load() {
-            const r = await fetch(URL);
-            const t = await r.text();
-            const j = JSON.parse(t.substring(47).slice(0, -2));
-            allBeats = j.table.rows.map((row, i) => ({
-            id: i, 
-            title: row.c[1]?.v || "Unknown Title", // Column B
-            bpm: row.c[2]?.v || "N/A",             // Column C
-            genre: (row.c[3]?.v || "beat").toLowerCase(), // Column D
-            demo: row.c[4]?.v || "",               // Column E
-            img: "cover.jpg",                      // <--- FORCED DEFAULT IMAGE
-            price: row.c[5]?.v || 50,
-            download: row.c[6]?.v || ""             // Column G
-        }));
-            if(allBeats[0].title.toLowerCase().includes("title")) allBeats.shift();
-            filterFolder('all');
-        } catch (err) {
-            console.error("Error loading beats:", err);
+            try {
+                const r = await fetch(URL);
+                const t = await r.text();
+                const j = JSON.parse(t.substring(47).slice(0, -2));
+                
+                allBeats = j.table.rows.map((row, i) => ({
+                    id: i, 
+                    title: row.c[1]?.v || "Unknown Title", 
+                    bpm: row.c[2]?.v || "N/A",             
+                    genre: (row.c[3]?.v || "beat").toLowerCase(), 
+                    demo: row.c[4]?.v || "",               
+                    img: "cover.jpg",                      
+                    price: row.c[5]?.v || 50,              // Updated to Column F
+                    download: row.c[6]?.v || ""             // Updated to Column G
+                }));
 
+                if(allBeats[0] && allBeats[0].title.toLowerCase().includes("title")) allBeats.shift();
+                filterFolder('all');
+            } catch (err) {
+                console.error("Error loading data:", err);
+            }
         }
 
         function filterFolder(type) {
             document.querySelectorAll('.folder').forEach(el => el.classList.remove('active'));
             document.getElementById('btn-' + type).classList.add('active');
-            let filtered = allBeats.filter(b => type === 'pack' ? b.genre.includes('pack') : type === 'exclusive' ? b.genre.includes('exclusive') : !b.genre.includes('pack') && !b.genre.includes('exclusive'));
+            let filtered;
+            if (type === 'all') filtered = allBeats;
+            else if (type === 'pack') filtered = allBeats.filter(b => b.genre.includes('pack'));
+            else filtered = allBeats.filter(b => !b.genre.includes('pack'));
             draw(filtered);
         }
 
@@ -218,22 +182,15 @@
         function play(id) {
             const b = allBeats.find(x => x.id === id);
             const a = document.getElementById('audio');
-            
-            // DROPBOX FIX
             let streamUrl = b.demo.replace('www.dropbox.com', 'dl.dropboxusercontent.com').replace('dl=0', 'dl=1');
-            
             document.getElementById('p-title').innerText = b.title;
             document.getElementById('p-art').src = b.img;
             activeDL = {url: streamUrl, title: b.title + "_Demo.mp3"};
-            
             a.src = streamUrl;
             a.load();
             document.getElementById('player').style.display = 'flex';
-            
-            // Reset Lock
             const btn = document.getElementById('final-dl-btn');
             btn.style.pointerEvents = "none"; btn.style.background = "#222"; btn.innerText = "LOCKED";
-            
             a.play();
         }
 
@@ -241,11 +198,7 @@
             setTimeout(() => {
                 const btn = document.getElementById('final-dl-btn');
                 btn.href = activeDL.url;
-                btn.setAttribute('download', activeDL.title);
-                btn.style.pointerEvents = "auto";
-                btn.style.background = "var(--blue)";
-                btn.style.color = "white";
-                btn.innerText = "DOWNLOAD NOW";
+                btn.style.pointerEvents = "auto"; btn.style.background = "var(--blue)"; btn.style.color = "white"; btn.innerText = "DOWNLOAD NOW";
             }, 3000);
         }
 
