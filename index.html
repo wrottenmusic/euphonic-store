@@ -41,6 +41,29 @@
         /* Global Audio Player */
         #player { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(8,8,8,0.98); border-top: 2px solid var(--blue); padding: 15px; display: none; align-items: center; justify-content: space-between; z-index: 4000; backdrop-filter: blur(10px); }
 
+        /* Professional Cover Art Overlay */
+.art-wrap::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.8) 100%);
+    pointer-events: none; /* Allows the play button to still be clicked */
+}
+
+.art-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.8); /* Slightly dims the image */
+    transition: 0.3s ease;
+}
+
+.beat-card:hover .art-img {
+    filter: brightness(1); /* Brightens when user hovers */
+    transform: scale(1.05); /* Slight zoom effect */
+}
+
         /* Footer */
         .footer { padding: 60px 20px 140px; text-align: center; background: #050505; border-top: 1px solid #111; color: #555; font-size: 12px; }
         .footer b { color: #888; font-size: 14px; }
@@ -151,12 +174,19 @@
             const t = await r.text();
             const j = JSON.parse(t.substring(47).slice(0, -2));
             allBeats = j.table.rows.map((row, i) => ({
-                id: i, title: row.c[1]?.v || "Beat", bpm: row.c[2]?.v || "N/A",
-                genre: (row.c[3]?.v || "").toLowerCase(), demo: row.c[4]?.v || "",
-                img: "cover.jpg", price: row.c[6]?.v || 50
-            }));
+            id: i, 
+            title: row.c[1]?.v || "Unknown Title", // Column B
+            bpm: row.c[2]?.v || "N/A",             // Column C
+            genre: (row.c[3]?.v || "").toLowerCase(), // Column D
+            demo: row.c[4]?.v || "",               // Column E
+            img: "cover.jpg",                      // <--- FORCED DEFAULT IMAGE
+            price: row.c[6]?.v || 50               // Column G
+        }));
             if(allBeats[0].title.toLowerCase().includes("title")) allBeats.shift();
             filterFolder('beat');
+        } catch (err) {
+            console.error("Error loading beats:", err);
+
         }
 
         function filterFolder(type) {
