@@ -66,6 +66,12 @@
     <div class="folder active" id="btn-beat" onclick="filterFolder('beat')">BEATS</div>
     <div class="folder" id="id-pack" onclick="filterFolder('pack')">SAMPLE PACKS</div>
     <div class="folder" id="btn-exclusive" onclick="filterFolder('exclusive')">PREMIUM BEATS</div>
+    <div class="folder-nav">
+    <div class="folder active" id="btn-beat" onclick="filterFolder('beat')">BEATS</div>
+    <div class="folder" id="btn-pack" onclick="filterFolder('pack')">SAMPLE PACKS</div>
+    <div class="folder" id="btn-exclusive" onclick="filterFolder('exclusive')">PREMIUM</div>
+    <div class="folder" style="background: #222; border-color: var(--wa-green); color: var(--wa-green);" onclick="contactProducer()">CUSTOM</div>
+</div>
 </div>
     </div>
 
@@ -261,6 +267,11 @@ function draw(data) {
     }
     
     a.play();
+}
+function contactProducer() {
+    const phoneNumber = "260979693555"; // Your WhatsApp number
+    const message = encodeURIComponent("Hello Euphonic Sounds! I'm interested in getting a custom beat made. Could you let me know your rates and process?");
+    window.open(`https://wa.me/${phoneNumber}?text=${message}`);
 }
         function buy(e, t, p) { 
             cart.push({t, p}); 
