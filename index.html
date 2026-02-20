@@ -178,19 +178,28 @@
             draw(allBeats.filter(b => b.title.toLowerCase().includes(q) || b.genre.includes(q)));
         }
 
-        function draw(data) {
-            document.getElementById('beat-container').innerHTML = data.map(b => `
-                <div class="beat-card">
-                    <div class="art-wrap"><img src="${b.img}" class="art-img"><button class="play-btn" onclick="play(${b.id})">▶</button></div>
-                    <div style="padding:15px">
-                        <div style="font-size:13px; font-weight:900;">${b.title}</div>
-                        <div style="font-size:10px; color:#666; margin-top:4px;">${b.genre.toUpperCase()} • ${b.bpm} BPM</div>
-                        <div style="color:var(--gold); font-weight:900; margin:10px 0;">K${b.price}</div>
-                        <button onclick="buy(event, '${b.title}', ${b.price})" style="width:100%; padding:10px; border-radius:8px; border:none; background:var(--blue); color:white; font-weight:700; cursor:pointer; font-size:11px;">ADD TO CART</button>
-                    </div>
-                </div>`).join('');
-        }
+   function draw(data) {
+    document.getElementById('beat-container').innerHTML = data.map(b => {
+        // This removes "exclusive" and "pack" from the display text only
+        const cleanGenre = b.genre.replace('exclusive', '').replace('pack', '').trim();
 
+        return `
+            <div class="beat-card">
+                <div class="art-wrap">
+                    <img src="${b.img}" class="art-img">
+                    <button class="play-btn" onclick="play(${b.id})">▶</button>
+                </div>
+                <div style="padding:15px">
+                    <div style="font-size:13px; font-weight:900;">${b.title}</div>
+                    <div style="font-size:10px; color:#666; margin-top:4px;">
+                        ${cleanGenre.toUpperCase()} • ${b.bpm} BPM
+                    </div>
+                    <div style="color:var(--gold); font-weight:900; margin:10px 0;">K${b.price}</div>
+                    <button onclick="buy(event, '${b.title}', ${b.price})" style="width:100%; padding:10px; border-radius:8px; border:none; background:var(--blue); color:white; font-weight:700; cursor:pointer; font-size:11px;">ADD TO CART</button>
+                </div>
+            </div>`;
+    }).join('');
+}
         function play(id) {
             const b = allBeats.find(x => x.id === id);
             const a = document.getElementById('audio');
