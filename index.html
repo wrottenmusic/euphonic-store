@@ -177,13 +177,14 @@
             id: i, 
             title: row.c[1]?.v || "Unknown Title", // Column B
             bpm: row.c[2]?.v || "N/A",             // Column C
-            genre: (row.c[3]?.v || "").toLowerCase(), // Column D
+            genre: (row.c[3]?.v || "beat").toLowerCase(), // Column D
             demo: row.c[4]?.v || "",               // Column E
             img: "cover.jpg",                      // <--- FORCED DEFAULT IMAGE
-            price: row.c[6]?.v || 50               // Column G
+            price: row.c[5]?.v || 50,
+            download: row.c[6]?.v || ""             // Column G
         }));
             if(allBeats[0].title.toLowerCase().includes("title")) allBeats.shift();
-            filterFolder('beat');
+            filterFolder('all');
         } catch (err) {
             console.error("Error loading beats:", err);
 
