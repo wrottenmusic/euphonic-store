@@ -183,32 +183,54 @@ function draw(data) {
         const isPack = b.genre.includes('pack');
         const isPremium = b.genre.includes('exclusive');
         
-        // 1. Clean up the genre text (hide keywords)
+        // 1. Change cover art for packs only
+        const currentArt = isPack ? 'pack.jpg' : 'cover.jpg';
+
+        // 2. Clean up genre text
         const cleanGenre = b.genre.replace('exclusive', '').replace('pack', '').trim();
 
-        // 2. Logic for BPM/Genre line (Hide if it's a pack)
+        // 3. Logic for BPM/Info Line
         const infoLine = isPack 
-            ? `<div style="font-size:10px; color:#666; margin-top:4px;">${cleanGenre.toUpperCase()}</div>`
+            ? `<div style="font-size:10px; color:#666; margin-top:4px;">SAMPLE PACK</div>`
             : `<div style="font-size:10px; color:#666; margin-top:4px;">${cleanGenre.toUpperCase()} • ${b.bpm} BPM</div>`;
 
-        // 3. Logic for Premium Gold Button vs Blue Button
-        const btnStyle = isPremium ? 'background:var(--gold); color:#000;' : 'background:var(--blue); color:white;';
-        const btnText = isPremium ? 'BUY EXCLUSIVE' : 'ADD TO CART';
+        // 4. Logic for Buttons
+        let actionButtons;
+        if (isPack) {
+            // Two buttons for Sample Packs
+            actionButtons = `
+                <div style="display: flex; gap: 5px; margin-top: 10px;">
+                    <button onclick="play(${b.id}); document.getElementById('social-modal').style.display='flex';" 
+                            style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #444; background: #222; color: white; font-weight: 700; cursor: pointer; font-size: 9px;">
+                        DEMO
+                    </button>
+                    <button onclick="buy(event, '${b.title}', ${b.price})" 
+                            style="flex: 2; padding: 10px; border-radius: 8px; border: none; background: var(--blue); color: white; font-weight: 700; cursor: pointer; font-size: 9px;">
+                        FULL PACK
+                    </button>
+                </div>`;
+        } else {
+            // Single button for Beats (Gold for Premium, Blue for Regular)
+            const btnStyle = isPremium ? 'background:var(--gold); color:#000;' : 'background:var(--blue); color:white;';
+            const btnText = isPremium ? 'BUY EXCLUSIVE' : 'ADD TO CART';
+            actionButtons = `
+                <button onclick="buy(event, '${b.title}', ${b.price})" 
+                        style="width:100%; padding:10px; border-radius:8px; border:none; ${btnStyle} font-weight:700; cursor:pointer; font-size:11px; margin-top:10px;">
+                    ${btnText}
+                </button>`;
+        }
 
         return `
             <div class="beat-card">
                 <div class="art-wrap">
-                    <img src="${b.img}" class="art-img">
+                    <img src="${currentArt}" class="art-img">
                     <button class="play-btn" onclick="play(${b.id})">▶</button>
                 </div>
                 <div style="padding:15px">
                     <div style="font-size:13px; font-weight:900;">${b.title}</div>
                     ${infoLine}
                     <div style="color:var(--gold); font-weight:900; margin:10px 0;">K${b.price}</div>
-                    <button onclick="buy(event, '${b.title}', ${b.price})" 
-                            style="width:100%; padding:10px; border-radius:8px; border:none; ${btnStyle} font-weight:700; cursor:pointer; font-size:11px;">
-                        ${btnText}
-                    </button>
+                    ${actionButtons}
                 </div>
             </div>`;
     }).join('');
